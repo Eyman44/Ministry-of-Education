@@ -4,7 +4,6 @@ import 'package:flutter_application_eyman/constant/color.dart';
 import 'package:flutter_application_eyman/constant/image.dart';
 import 'package:flutter_application_eyman/secreens/mark_page.dart';
 import 'package:http/http.dart' as http;
-
 import '../models/education_model.dart';
 import '../models/year_model.dart';
 import '../utils/global.dart';
@@ -18,13 +17,15 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   List<CertTypeModel> certTypes = [];
+  List<String> certifications = [];
+  String? selectedCertification;
   bool isCertLoading = true;
 
   List<YearModel> years = [];
   YearModel? selectedYear;
   bool isLoading = true;
 
-  int? certTypeId ;
+  int? certTypeId;
   int? eYearId;
   final TextEditingController numberController = TextEditingController();
 
@@ -37,16 +38,17 @@ class _SearchPageState extends State<SearchPage> {
   void loadCertTypes() async {
     try {
       final baseUrl = Global.baseUrl;
-      final token= Global.token;
       final url = Uri.parse('$baseUrl/certType/');
       final response = await http.get(url, headers: {
-        'Authorization': token,
       });
 
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body)['data'];
+        final types = data.map((e) => CertTypeModel.fromJson(e)).toList();
         setState(() {
-          certTypes = data.map((e) => CertTypeModel.fromJson(e)).toList();
+          certTypes = types;
+          certifications =
+              types.map((e) => e.certificationName).toSet().toList();
           isCertLoading = false;
         });
       } else {
@@ -149,19 +151,47 @@ class _SearchPageState extends State<SearchPage> {
 
                           // نوع الشهادة
 
-                          DropdownButtonFormField<int>(
+                          DropdownButtonFormField<String>(
                             decoration: const InputDecoration(
                               prefixIcon: Icon(Icons.school),
-                              labelText: "Certificate Type",
+                              labelText: "Certificate",
                               border: OutlineInputBorder(),
                             ),
-                            items: certTypes.map((cert) {
-                              return DropdownMenuItem<int>(
-                                value: cert.id,
-                                child: Text(cert.certificationName),
-                              );
-                            }).toList(),
 
+
+                            value: selectedCertification,
+                            items: certifications
+                                .map((name) => DropdownMenuItem<String>(
+                              value: name,
+                              child: Text(name),
+                            ))
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                selectedCertification = value;
+                               // certTypeId = null; // reset branch selection
+                              });
+                            },
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // قائمة
+                          DropdownButtonFormField<int>(
+                            decoration: const InputDecoration(
+                              prefixIcon: Icon(Icons.school_outlined),
+                              labelText: "Branch",
+                              border: OutlineInputBorder(),
+                            ),
+                            value: certTypeId,
+                            items: certTypes
+                                .where((c) =>
+                            c.certificationName == selectedCertification)
+                                .map((c) => DropdownMenuItem<int>(
+                              value: c.id,
+                              child: Text(c.name),
+                            ))
+                                .toList(),
                             onChanged: (value) {
                               setState(() {
                                 certTypeId = value;

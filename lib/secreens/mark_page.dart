@@ -86,8 +86,7 @@ class _MarkPageState extends State<Mark_page> {
   Future<void> _submitAllScores() async {
     try {
       await AuthService.loadToken();
-      //final token = Global.token;
-      final token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTc0OTkyMDcxMCwiZXhwIjoxODEyMTI4NzEwfQ.P5EPPcjPpr5IpGZ-ELS0ilf1lDusLtyc8gNHl6f0PbI';
+      final token = Global.token;
       final baseUrl = Global.baseUrl;
       final studentService = StudentService(baseUrl: baseUrl, token: token);
 
@@ -117,6 +116,7 @@ class _MarkPageState extends State<Mark_page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       body: Stack(
         children: [
           SizedBox.expand(
