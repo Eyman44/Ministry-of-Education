@@ -9,14 +9,12 @@ class CertTypeModel {
     required this.id,
     required this.certificationName,
     required this.name,
-
   });
   factory CertTypeModel.fromJson(Map<String, dynamic> json) {
-
     return CertTypeModel(
-    id: json['id'],
-    certificationName: json['certification']['name'],
-    name: json['name'],
+      id: json['id'],
+      certificationName: json['certification']['name'],
+      name: json['name'],
     );
   }
 }
@@ -37,8 +35,13 @@ class Certificate {
 }
 
 class Subject {
+  int id;
   String name;
   int maxMark;
-
-  Subject({required this.name, required this.maxMark});
+  int minMark;
+  Subject(
+      {required this.name,
+      required this.maxMark,
+      required this.minMark,
+      required this.id});
 }

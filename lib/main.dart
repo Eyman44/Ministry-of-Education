@@ -8,7 +8,9 @@ import 'package:flutter_application_eyman/secreens/search_page.dart';
 import 'package:flutter_application_eyman/secreens/result_page.dart';
 import 'package:flutter_application_eyman/services/auth_service.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
+ String baseUrl = "https://project2-e2k6.onrender.com";
+SharedPreferences? sharedpref;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AuthService.loadToken();

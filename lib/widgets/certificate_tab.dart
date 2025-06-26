@@ -2,18 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_eyman/constant/color.dart';
 import 'package:flutter_application_eyman/models/education_model.dart';
 import 'package:flutter_application_eyman/widgets/subject_dialog.dart';
+import 'package:get/get.dart';
+import 'package:flutter_application_eyman/controllers/certificate_controller.dart';
 
 class CertificateTab extends StatelessWidget {
   final Certificate certificate;
-  final Function(Subject) onAddSubject;
-  final Function(int, Subject) onEditSubject;
+  final int certTypeId; // أضفت هذا لتمرير معرف نوع الشهادة
+  final Function() onRefresh; 
 
-  const CertificateTab({
+  CertificateTab({
     super.key,
     required this.certificate,
-    required this.onAddSubject,
-    required this.onEditSubject,
+    required this.certTypeId,
+    required this.onRefresh,
   });
+
+  final CertificateController controller = Get.find();
 
   int get totalMarks =>
       certificate.subjects.fold(0, (sum, subj) => sum + subj.maxMark);
@@ -27,7 +31,7 @@ class CertificateTab extends StatelessWidget {
             opacity: 0.5,
             child: Image.asset(
               certificate.imageAsset,
-              fit: BoxFit.cover, // يجعل الصورة تغطي كامل الخلفية بدون قص
+              fit: BoxFit.cover,
               alignment: Alignment.center,
             ),
           ),
@@ -45,11 +49,21 @@ class CertificateTab extends StatelessWidget {
                     margin:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: AppColor.purple,
-                        child: Text(subject.maxMark.toString()),
-                      ),
                       title: Text(subject.name),
+                      leading: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildMarkCircle(
+                            icon: Icons.arrow_downward,
+                            value: subject.minMark,
+                          ),
+                          const SizedBox(width: 6),
+                          _buildMarkCircle(
+                            icon: Icons.arrow_upward,
+                            value: subject.maxMark,
+                          ),
+                        ],
+                      ),
                       trailing: IconButton(
                         icon: const Icon(Icons.edit),
                         onPressed: () async {
@@ -59,7 +73,13 @@ class CertificateTab extends StatelessWidget {
                                 SubjectDialog(subject: subject),
                           );
                           if (edited != null) {
-                            onEditSubject(index, edited);
+                            await controller.editSubject(
+                              id: subject.id,
+                              name: edited.name,
+                              maxMark: edited.maxMark,
+                              minMark: edited.minMark,
+                            );
+                            onRefresh();
                           }
                         },
                       ),
@@ -79,7 +99,13 @@ class CertificateTab extends StatelessWidget {
                         builder: (context) => const SubjectDialog(),
                       );
                       if (newSubject != null) {
-                        onAddSubject(newSubject);
+                        await controller.addSubject(
+                          name: newSubject.name,
+                          maxMark: newSubject.maxMark,
+                          minMark: newSubject.minMark,
+                          certTypeId: certTypeId,
+                        );
+                        onRefresh(); // إعادة تحميل البيانات من الخارج
                       }
                     },
                     icon: const Icon(Icons.add_circle_outline,
@@ -113,6 +139,34 @@ class CertificateTab extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+
+  Widget _buildMarkCircle({
+    required IconData icon,
+    required int value,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.orange.withOpacity(0.2),
+        shape: BoxShape.circle,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: AppColor.orange),
+          const SizedBox(width: 1),
+          Text(
+            '$value',
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: Colors.orange,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,267 +1,328 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_application_eyman/controllers/certificate_controller.dart';
-import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
-
 import 'package:flutter_application_eyman/constant/color.dart';
 import 'package:flutter_application_eyman/constant/image.dart';
+import 'package:flutter_application_eyman/controllers/certificate_controller.dart';
 import 'package:flutter_application_eyman/models/education_model.dart';
 import 'package:flutter_application_eyman/widgets/certificate_tab.dart';
-import 'package:flutter_application_eyman/utils/global.dart';
+import 'package:get/get.dart';
 
-class CertificateDashboard extends StatefulWidget {
-  const CertificateDashboard({super.key});
-
-  @override
-  State<CertificateDashboard> createState() => _CertificateDashboardState();
-}
-
-class _CertificateDashboardState extends State<CertificateDashboard>
-    with TickerProviderStateMixin {
-  final CertificatesController controller = Get.put(CertificatesController());
-
-  String? selectedYear;
-  late TabController _tabController;
-
-  final RxList<Certificate> certificates = <Certificate>[
-    Certificate(
-      name: "Intermediate Certificate",
-      subjects: [
-        Subject(name: "Arabic Language", maxMark: 600),
-        Subject(name: "Mathematics", maxMark: 400),
-        Subject(name: "Biology", maxMark: 200),
-        Subject(name: "English Language", maxMark: 200),
-        Subject(name: "History science", maxMark: 100),
-        Subject(name: "geography", maxMark: 100),
-      ],
-      icon: Icons.school,
-      imageAsset: AppImageAsset.basic,
-    ),
-    Certificate(
-      name: "Religious Intermediate",
-      subjects: [
-        Subject(name: "Fiqh", maxMark: 200),
-        Subject(name: "Hadith", maxMark: 200),
-      ],
-      icon: Icons.book_online,
-      imageAsset: AppImageAsset.religious,
-    ),
-    Certificate(
-      name: "Scientific Secondary",
-      subjects: [
-        Subject(name: "Physics", maxMark: 90),
-        Subject(name: "Chemistry", maxMark: 90),
-      ],
-      icon: Icons.science,
-      imageAsset: AppImageAsset.scientific,
-    ),
-    Certificate(
-      name: "Literary Secondary",
-      subjects: [
-        Subject(name: "Philosophy", maxMark: 400),
-        Subject(name: "French Language", maxMark: 300),
-      ],
-      icon: Icons.menu_book,
-      imageAsset: AppImageAsset.literary,
-    ),
-    Certificate(
-      name: "Vocational Secondary",
-      subjects: [
-        Subject(name: "Carpentry", maxMark: 200),
-        Subject(name: "Mechanics", maxMark: 300),
-      ],
-      icon: Icons.handyman,
-      imageAsset: AppImageAsset.vocational,
-    ),
-  ].obs;
-
-  @override
-  void initState() {
-    super.initState();
-    controller.fetchYears().then((_) {
-      if (controller.years.isNotEmpty) {
-        selectedYear = controller.years.first;
-      }
-    });
-    _tabController = TabController(length: certificates.length, vsync: this);
-    ever(certificates, (_) {
-      _tabController.dispose();
-      _tabController = TabController(length: certificates.length, vsync: this);
-      setState(() {});
-    });
-  }
-
- Future<void> _showAddCertificateDialog() async {
-  final TextEditingController ctrl = TextEditingController();
-  final formKey = GlobalKey<FormState>();
-
-  final name = await showDialog<String>(
-    context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Add Certificate'),
-      content: Form(
-        key: formKey,
-        child: TextFormField(
-          controller: ctrl,
-          decoration: const InputDecoration(labelText: 'Certificate Name'),
-          validator: (v) => v == null || v.trim().isEmpty ? 'Required' : null,
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(ctx),
-          child: const Text('Cancel'),
-        ),
-        ElevatedButton(
-          onPressed: () {
-            if (formKey.currentState!.validate()) {
-              Navigator.pop(ctx, ctrl.text.trim());
-            }
-          },
-          child: const Text('Save'),
-        ),
-      ],
-    ),
-  );
-
-  if (name != null) {
-    try {
-      bool success = await controller.addCertificate(name);
-      if (success) {
-        certificates.add(
-          Certificate(
-            name: name,
-            subjects: [],
-            icon: Icons.school,
-            imageAsset: AppImageAsset.basic,
-          ),
-        );
-      } else {
-        // مثلاً يمكن إظهار رسالة للمستخدم أو تجاهلها بصمت
-        print("API responded with failure. Certificate not added.");
-      }
-    } catch (e) {
-      print("Error while adding certificate: $e");
-    }
-  }
-}
+class CertificateDashboard extends StatelessWidget {
+  CertificateDashboard({super.key});
+  final CertificateController controller = Get.put(CertificateController());
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() {
-      return DefaultTabController(
-        length: certificates.length,
-        child: Scaffold(
-          appBar: PreferredSize(
-            preferredSize: const Size.fromHeight(145),
-            child: AppBar(
-              backgroundColor: AppColor.title,
-              flexibleSpace: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 12, right: 2, top: 10),
-                  child: Row(
-                    children: [
-                      const CircleAvatar(
-                        backgroundImage: AssetImage(AppImageAsset.logo),
-                        radius: 30,
-                      ),
-                      const SizedBox(width: 40),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 15),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "🎓 Ministry of Education",
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColor.iconColor),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Obx(() {
-                                if (controller.isLoading.value) {
-                                  return const SizedBox(
-                                    width: 22,
-                                    height: 22,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: AppColor.iconColor,
-                                    ),
-                                  );
-                                }
-                                return DropdownButton<String>(
-                                  value: selectedYear,
-                                  icon: const Icon(Icons.arrow_drop_down,
-                                      color: AppColor.iconColor),
-                                  underline: Container(
-                                      height: 1,
-                                      color: AppColor.backgroundcolor),
-                                  onChanged: (v) => selectedYear = v,
-                                  items: controller.years
-                                      .map(
-                                        (y) => DropdownMenuItem(
-                                          value: y,
-                                          child: Text(y,
-                                              style: const TextStyle(
-                                                  color: AppColor.purple)),
-                                        ),
-                                      )
-                                      .toList(),
-                                );
-                              }),
-                            ],
-                          ),
-                        ),
-                      )
-                    ],
+    return Scaffold(
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(80),
+        child: AppBar(
+          backgroundColor: AppColor.title,
+          flexibleSpace: const SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    backgroundImage: AssetImage(AppImageAsset.logo),
+                    radius: 30,
                   ),
-                ),
-              ),
-              bottom: TabBar(
-                controller: _tabController,
-                isScrollable: true,
-                labelColor: AppColor.orange,
-                unselectedLabelColor: AppColor.backgroundcolor,
-                tabs: certificates
-                    .map(
-                      (cert) => Tab(
-                        child: Row(
-                          children: [
-                            Icon(cert.icon, size: 20),
-                            const SizedBox(width: 5),
-                            Text(cert.name),
-                          ],
-                        ),
+                  SizedBox(width: 16),
+                  Expanded(
+                    child: Text(
+                      "\ud83c\udf93 Ministry of Education",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: AppColor.iconColor,
                       ),
-                    )
-                    .toList(),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: _showAddCertificateDialog,
-            backgroundColor: AppColor.purple,
-            child: const Icon(Icons.add),
-          ),
-          body: TabBarView(
-            controller: _tabController,
-            children: certificates.asMap().entries.map((entry) {
-              final index = entry.key;
-              final cert = entry.value;
-              return CertificateTab(
-                certificate: cert,
-                onAddSubject: (subject) =>
-                    certificates[index].subjects.add(subject),
-                onEditSubject: (i, subject) =>
-                    certificates[index].subjects[i] = subject,
-              );
-            }).toList(),
-          ),
         ),
-      );
-    });
+      ),
+      body: Obx(() {
+        if (controller.isLoading.value) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        return DefaultTabController(
+          length: controller.certificates.length + 1,
+          child: Column(
+            children: [
+              Container(
+                color: AppColor.title,
+                child: TabBar(
+                  isScrollable: true,
+                  labelColor: AppColor.orange,
+                  unselectedLabelColor: AppColor.backgroundcolor,
+                  tabs: [
+                    ...controller.certificates.map((cert) {
+                      return Tab(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(cert.name),
+                            const SizedBox(width: 6),
+                            GestureDetector(
+                              onTap: () async {
+                                final TextEditingController editController =
+                                    TextEditingController(text: cert.name);
+                                final name = await showDialog<String>(
+                                  context: context,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      title: const Text("Edit Certificate"),
+                                      content: TextField(
+                                        decoration: const InputDecoration(
+                                            labelText: "New Name"),
+                                        controller: editController,
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context),
+                                          child: const Text("Cancel"),
+                                        ),
+                                        ElevatedButton(
+                                          onPressed: () => Navigator.pop(
+                                              context, editController.text),
+                                          child: const Text("Save"),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                                if (name != null && name.trim().isNotEmpty) {
+                                  controller.updateCertificate(
+                                      cert.id, name.trim());
+                                }
+                              },
+                              child: const Icon(Icons.edit,
+                                  size: 16, color: Colors.white),
+                            )
+                          ],
+                        ),
+                      );
+                    }),
+                    Tab(
+                      child: IconButton(
+                        icon: const Icon(Icons.add, color: Colors.white),
+                        onPressed: () async {
+                          final TextEditingController nameController =
+                              TextEditingController();
+                          final name = await showDialog<String>(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                title: const Text("New Certificate"),
+                                content: TextField(
+                                  controller: nameController,
+                                  decoration: const InputDecoration(
+                                      labelText: "Certificate Name"),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: const Text("Cancel"),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () => Navigator.pop(
+                                        context, nameController.text),
+                                    child: const Text("Create"),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                          if (name != null && name.trim().isNotEmpty) {
+                            controller.createCertificate(name.trim());
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    ...controller.certificates.map((cert) {
+                      return DefaultTabController(
+                        length: cert.certTypes.length + 1,
+                        child: Column(
+                          children: [
+                            Container(
+                              color: AppColor.title,
+                              child: TabBar(
+                                isScrollable: true,
+                                labelColor: AppColor.orange,
+                                unselectedLabelColor: AppColor.backgroundcolor,
+                                tabs: [
+                                  ...cert.certTypes.map((type) {
+                                    return Tab(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                              "${type.name} - ${type.city.name}",
+                                              style: const TextStyle(
+                                                  fontSize: 13)),
+                                          const SizedBox(width: 4),
+                                          GestureDetector(
+                                            onTap: () async {
+                                              final TextEditingController
+                                                  nameController =
+                                                  TextEditingController(
+                                                      text: type.name);
+                                              final name =
+                                                  await showDialog<String>(
+                                                context: context,
+                                                builder: (context) {
+                                                  return AlertDialog(
+                                                    title: const Text(
+                                                        "Edit Certificate Type"),
+                                                    content: TextField(
+                                                      controller:
+                                                          nameController,
+                                                      decoration:
+                                                          const InputDecoration(
+                                                              labelText:
+                                                                  "New Name"),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                          onPressed: () =>
+                                                              Navigator.pop(
+                                                                  context),
+                                                          child: const Text(
+                                                              "Cancel")),
+                                                      ElevatedButton(
+                                                        onPressed: () =>
+                                                            Navigator.pop(
+                                                                context,
+                                                                nameController
+                                                                    .text),
+                                                        child:
+                                                            const Text("Save"),
+                                                      ),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                              if (name != null &&
+                                                  name.trim().isNotEmpty) {
+                                                controller
+                                                    .updateCertificateType(
+                                                  type.id,
+                                                  name.trim(),
+                                                  cert.id,
+                                                  type.city.id,
+                                                );
+                                              }
+                                            },
+                                            child: const Icon(Icons.edit,
+                                                size: 14, color: Colors.white),
+                                          )
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                                  Tab(
+                                    child: IconButton(
+                                      icon: const Icon(Icons.add,
+                                          color: Colors.white),
+                                      onPressed: () async {
+                                        final TextEditingController
+                                            nameController =
+                                            TextEditingController();
+                                        final name = await showDialog<String>(
+                                          context: context,
+                                          builder: (context) {
+                                            return AlertDialog(
+                                              title: const Text(
+                                                  "New Certificate Type"),
+                                              content: TextField(
+                                                controller: nameController,
+                                                decoration:
+                                                    const InputDecoration(
+                                                        labelText: "Type Name"),
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.pop(context),
+                                                    child:
+                                                        const Text("Cancel")),
+                                                ElevatedButton(
+                                                  onPressed: () =>
+                                                      Navigator.pop(context,
+                                                          nameController.text),
+                                                  child: const Text("Create"),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        );
+                                        if (name != null &&
+                                            name.trim().isNotEmpty) {
+                                          int cityId = cert.certTypes.isNotEmpty
+                                              ? cert.certTypes.first.city.id
+                                              : 1;
+                                          controller.createCertificateType(
+                                              name.trim(), cert.id, cityId);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: TabBarView(
+                                children: [
+                                  ...cert.certTypes.map((type) {
+                                    return CertificateTab(
+                                      certificate: Certificate(
+                                        name:
+                                            "${type.name} - ${type.city.name}",
+                                        subjects: type.subjects
+                                            .map((subj) => Subject(
+                                              id: subj.id,
+                                                name: subj.name,
+                                                maxMark: subj.maxMark,
+                                                minMark: subj.minMark))
+                                            .toList(),
+                                        icon: Icons.school,
+                                        imageAsset: AppImageAsset.basic,
+                                      ), certTypeId: type.id, 
+                                      onRefresh: () => controller.fetchCertificates(),
+                                    );
+                                  }),
+                                  const Center(
+                                    child: Text(
+                                        "Create a new certificate type using ➕ above"),
+                                  )
+                                ],
+                              ),
+                            )
+                          ],
+                        ),
+                      );
+                    }),
+                    const Center(
+                      child: Text("Create a new certificate using ➕ above"),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
+        );
+      }),
+    );
   }
 }
