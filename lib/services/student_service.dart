@@ -80,7 +80,7 @@ class StudentService {
     required int eYearId,
     required String number,
   }) async {
-    final url = Uri.parse('$baseUrl/student/$certTypeId/$eYearId/$number');
+    final url = Uri.parse('$baseUrl/student/$eYearId/$certTypeId/$number');
 
     final response = await http.get(
       url,

@@ -37,12 +37,11 @@ class EducationMinisterApp extends StatelessWidget {
       //DataEntryPage(),
       //Mark_page(),
       debugShowCheckedModeBanner: false,
-      initialRoute: '/',
+      initialRoute: '/search-page',
       routes: {
         '/': (context) => const LoginPage(),
         '/data-entry': (context) => const DataEntryPage(),
         '/search-page': (context) => const SearchPage(),
-        '/ResultPage': (context) => const ResultPage(),
         '/CertificateDashboard': (context) => CertificateDashboard(),
         '/StudentProfilePage': (context) => const StudentProfilePage(),
         //'/Mark_page': (context) => const Mark_page(),

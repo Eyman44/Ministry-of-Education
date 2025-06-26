@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_eyman/constant/color.dart';
 import 'package:flutter_application_eyman/constant/image.dart';
 import 'package:flutter_application_eyman/secreens/mark_page.dart';
+import 'package:flutter_application_eyman/secreens/result_page.dart';
 import 'package:http/http.dart' as http;
 import '../models/education_model.dart';
 import '../models/year_model.dart';
@@ -125,6 +126,23 @@ class _SearchPageState extends State<SearchPage> {
                     ],
                   ),
                 ),
+                Padding(
+                  padding: const EdgeInsets.only(right: 10.0),
+                  child: Align(
+                    alignment: Alignment.topRight,
+                    child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/');
+                      },
+                      icon: const Icon(Icons.login, color: AppColor.purple),
+                      label: const Text(
+                        'Administration Page',
+                        style: TextStyle(color: AppColor.purple, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ),
+
                 const Spacer(),
                 Center(
                   child: Card(
@@ -246,14 +264,20 @@ class _SearchPageState extends State<SearchPage> {
                                 if (certTypeId != null &&
                                     eYearId != null &&
                                     numberController.text.isNotEmpty) {
+                                  final bool loggedIn = Global.token.isNotEmpty;
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (_) => Mark_page(
+                                      builder: (_) => loggedIn
+                                          ? Mark_page(
                                         certTypeId: certTypeId!,
                                         eYearId: eYearId!,
                                         number: numberController.text,
-                                      ),
+                                      )
+                                          : ResultPage(
+                                        certTypeId: certTypeId!,
+                                        eYearId: eYearId!,
+                                        number: numberController.text,),
                                     ),
                                   );
                                 } else {

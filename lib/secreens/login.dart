@@ -14,10 +14,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class LoginPageState extends State<LoginPage> {
-  // final _usernameController = TextEditingController(text: "dataEntry1");
-  // final _passwordController = TextEditingController(text: "password");
-  final _usernameController = TextEditingController(text: "admin");
-  final _passwordController = TextEditingController(text: "admin");
+   final _usernameController = TextEditingController(text: "dataEntry1");
+   final _passwordController = TextEditingController(text: "password");
+  //final _usernameController = TextEditingController(text: "admin");
+  //final _passwordController = TextEditingController(text: "admin");
   final _formKey = GlobalKey<FormState>();
 
   bool _isPasswordVisible = false;

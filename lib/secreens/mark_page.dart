@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_application_eyman/constant/color.dart';
 import 'package:flutter_application_eyman/constant/image.dart';
 import 'package:flutter_application_eyman/secreens/student_profile.dart';
+import 'package:flutter_application_eyman/secreens/result_page.dart';
 import '../services/auth_service.dart';
 import '../services/student_service.dart';
 import '../utils/global.dart';
@@ -45,7 +47,8 @@ class _MarkPageState extends State<Mark_page> {
       final token = Global.token;
       final baseUrl = Global.baseUrl;
 
-      final data = await StudentService(baseUrl: baseUrl, token: token).fetchStudentMarks(
+      final data = await StudentService(baseUrl: baseUrl, token: token)
+          .fetchStudentMarks(
         certTypeId: widget.certTypeId,
         eYearId: widget.eYearId,
         number: widget.number,
@@ -102,13 +105,19 @@ class _MarkPageState extends State<Mark_page> {
           baseUrl: baseUrl,
         );
       }
-
+      setState(() {
+        totalMark = totalScore;
+      });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('All marks updated successfully!'), backgroundColor: Colors.green),
+        const SnackBar(
+            content: Text('All marks updated successfully!'),
+            backgroundColor: Colors.green),
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error updating marks: $e'), backgroundColor: Colors.red),
+        SnackBar(
+            content: Text('Error updating marks: $e'),
+            backgroundColor: Colors.red),
       );
     }
   }
@@ -116,7 +125,6 @@ class _MarkPageState extends State<Mark_page> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: Stack(
         children: [
           SizedBox.expand(
@@ -133,9 +141,15 @@ class _MarkPageState extends State<Mark_page> {
                   padding: EdgeInsets.all(10),
                   child: Row(
                     children: [
-                      CircleAvatar(backgroundImage: AssetImage(AppImageAsset.logo), radius: 24),
+                      CircleAvatar(
+                          backgroundImage: AssetImage(AppImageAsset.logo),
+                          radius: 24),
                       SizedBox(width: 8),
-                      Text('Ministry of Education', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColor.purple)),
+                      Text('Ministry of Education',
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: AppColor.purple)),
                       SizedBox(width: 5),
                       Icon(Icons.school, color: AppColor.purple, size: 20),
                     ],
@@ -150,15 +164,25 @@ class _MarkPageState extends State<Mark_page> {
                 ElevatedButton.icon(
                   onPressed: _submitAllScores,
                   icon: const Icon(Icons.save_rounded, color: Colors.white),
-                  label: const Text('Submit All Scores', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColor.purple, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14)),
+                  label: const Text('Submit All Scores',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.purple,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 14)),
                 ),
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: () => Navigator.pop(context),
                   icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  label: const Text('Back to Search', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColor.purple, padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 14)),
+                  label: const Text('Back to Search',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, color: Colors.white)),
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColor.purple,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 30, vertical: 14)),
                 ),
               ],
             ),
@@ -196,13 +220,22 @@ class _MarkPageState extends State<Mark_page> {
                     TableRow(children: [
                       const Padding(
                         padding: EdgeInsets.all(4),
-                        child: Text('Result:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        child: Text('Result:',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(4),
                         child: Row(
                           children: [
-                            Icon(result == 'Passed' ? Icons.check_circle : Icons.cancel, color: result == 'Passed' ? Colors.green : Colors.red, size: 18),
+                            Icon(
+                                result == 'Passed'
+                                    ? Icons.check_circle
+                                    : Icons.cancel,
+                                color: result == 'Passed'
+                                    ? Colors.green
+                                    : Colors.red,
+                                size: 18),
                             const SizedBox(width: 6),
                             Text(result, style: const TextStyle(fontSize: 18)),
                           ],
@@ -212,7 +245,8 @@ class _MarkPageState extends State<Mark_page> {
                   ],
                 ),
               ),
-              const Icon(Icons.perm_contact_calendar_sharp, color: Color.fromARGB(255, 170, 175, 219), size: 180),
+              const Icon(Icons.perm_contact_calendar_sharp,
+                  color: Color.fromARGB(255, 170, 175, 219), size: 180),
             ],
           ),
           const SizedBox(height: 10),
@@ -234,8 +268,9 @@ class _MarkPageState extends State<Mark_page> {
               );
             },
             icon: const Icon(Icons.edit, color: Colors.white),
-            label: const Text('Edit Student', style: TextStyle(color: Colors.white)),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.deepOrange),
+            label: const Text('Edit Student',
+                style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColor.orange),
           ),
         ],
       ),
@@ -244,8 +279,14 @@ class _MarkPageState extends State<Mark_page> {
 
   TableRow _tableRow(String label, String value) {
     return TableRow(children: [
-      Padding(padding: const EdgeInsets.all(4), child: Text(label, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
-      Padding(padding: const EdgeInsets.all(4), child: Text(value, style: const TextStyle(fontSize: 18))),
+      Padding(
+          padding: const EdgeInsets.all(4),
+          child: Text(label,
+              style:
+              const TextStyle(fontSize: 18, fontWeight: FontWeight.bold))),
+      Padding(
+          padding: const EdgeInsets.all(4),
+          child: Text(value, style: const TextStyle(fontSize: 18))),
     ]);
   }
 
@@ -265,16 +306,35 @@ class _MarkPageState extends State<Mark_page> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(subject['name'], style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(subject['name'],
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               TextField(
                 controller: subject['score'],
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Score', border: OutlineInputBorder()),
-                onChanged: (_) => setState(() {}),
-              ),
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                decoration: const InputDecoration(
+                    labelText: 'Score', border: OutlineInputBorder()),
+                onChanged: (value) {
+                  final maxMark = subject['max'] as int;
+                  final entered = int.tryParse(value) ?? 0;
+                  if (entered > maxMark) {
+                    subject['score'].text = maxMark.toString();
+                    subject['score'].selection = TextSelection.fromPosition(
+                      TextPosition(offset: subject['score'].text.length),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Score cannot exceed $maxMark'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                  setState(() {});
+                },              ),
               const SizedBox(height: 6),
-              Text('Max: ${subject['max']}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+              Text('Max: ${subject['max']}',
+                  style: const TextStyle(fontSize: 12, color: Colors.grey)),
             ],
           ),
         );
@@ -290,7 +350,11 @@ class _MarkPageState extends State<Mark_page> {
         borderRadius: BorderRadius.circular(12),
         color: AppColor.backgroundcolor,
       ),
-      child: Text('Total: \$totalScore', style: const TextStyle(color: AppColor.orange, fontSize: 20, fontWeight: FontWeight.bold)),
+      child: Text('Total: $totalMark',
+          style: const TextStyle(
+              color: AppColor.orange,
+              fontSize: 20,
+              fontWeight: FontWeight.bold)),
     );
   }
 }
