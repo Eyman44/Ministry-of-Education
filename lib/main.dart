@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_eyman/secreens/data_entry_page.dart';
 import 'package:flutter_application_eyman/secreens/student_profile.dart';
-import 'package:flutter_application_eyman/secreens/mark_page.dart';
+//import 'package:flutter_application_eyman/secreens/mark_page.dart';
 import 'package:flutter_application_eyman/secreens/login.dart';
 import 'package:flutter_application_eyman/secreens/minister_page.dart';
 import 'package:flutter_application_eyman/secreens/search_page.dart';
 import 'package:flutter_application_eyman/secreens/result_page.dart';
 import 'package:flutter_application_eyman/services/auth_service.dart';
-void main() async  {
+import 'package:get/get_navigation/src/root/get_material_app.dart';
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AuthService.loadToken();
   runApp(const EducationMinisterApp());
@@ -18,14 +20,13 @@ class EducationMinisterApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-
+    return GetMaterialApp(
       // title: 'Education System',
       // theme: ThemeData(
       //   primarySwatch: Colors.blue,
       //   visualDensity: VisualDensity.adaptivePlatformDensity,
       // ),
-     // home:
+      // home:
       //ResultPage(),
       //LoginPage(),
       //SearchPage(),
@@ -40,10 +41,9 @@ class EducationMinisterApp extends StatelessWidget {
         '/data-entry': (context) => const DataEntryPage(),
         '/search-page': (context) => const SearchPage(),
         '/ResultPage': (context) => const ResultPage(),
-        '/CertificateDashboard': (context) => const CertificateDashboard(),
+        '/CertificateDashboard': (context) => CertificateDashboard(),
         '/StudentProfilePage': (context) => const StudentProfilePage(),
         //'/Mark_page': (context) => const Mark_page(),
-
       },
     );
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_eyman/constant/color.dart';
 import 'package:flutter_application_eyman/constant/image.dart';
 import 'package:flutter_application_eyman/secreens/search_page.dart';
-import 'package:flutter_application_eyman/secreens/mark_page.dart';
+//import 'package:flutter_application_eyman/secreens/mark_page.dart';
 import 'package:flutter_application_eyman/secreens/student_profile.dart';
 
 class DataEntryPage extends StatelessWidget {

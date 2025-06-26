@@ -14,8 +14,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class LoginPageState extends State<LoginPage> {
-  final _usernameController = TextEditingController(text: "dataEntry1");
-  final _passwordController = TextEditingController(text: "password");
+  // final _usernameController = TextEditingController(text: "dataEntry1");
+  // final _passwordController = TextEditingController(text: "password");
+  final _usernameController = TextEditingController(text: "admin");
+  final _passwordController = TextEditingController(text: "admin");
   final _formKey = GlobalKey<FormState>();
 
   bool _isPasswordVisible = false;
@@ -27,13 +29,13 @@ class LoginPageState extends State<LoginPage> {
         children: [
           SizedBox.expand(
               child: Opacity(
-                opacity: 0.5,
-                child: Image.asset(
-                  AppImageAsset.s,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                ),
-              )),
+            opacity: 0.5,
+            child: Image.asset(
+              AppImageAsset.s,
+              fit: BoxFit.cover,
+              alignment: Alignment.center,
+            ),
+          )),
           Center(
             child: SingleChildScrollView(
               child: Form(
@@ -131,15 +133,19 @@ class LoginPageState extends State<LoginPage> {
                                 if (Global.isAdmin) {
                                   Navigator.pushReplacement(
                                     context,
-                                    MaterialPageRoute(builder: (_) => const CertificateDashboard()),
+                                    MaterialPageRoute(
+                                        builder: (_) =>
+                                           CertificateDashboard()),
                                   );
                                 } else {
                                   Navigator.pushReplacement(
                                     context,
-                                    MaterialPageRoute(builder: (_) => const DataEntryPage()),
+                                    MaterialPageRoute(
+                                        builder: (_) => const DataEntryPage()),
                                   );
                                 }
                               } catch (e) {
+                                print("Login error: $e");
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(content: Text('Login error: $e')),
                                 );
