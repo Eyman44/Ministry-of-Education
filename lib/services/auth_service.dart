@@ -14,16 +14,17 @@ class AuthService {
       'username': username,
       'password': password,
     });
-
+    late var token1;
+    var response1 = jsonDecode(response.body);
     if (response.statusCode == 200) {
+      token1 = response1["token"];
       final decoded = jsonDecode(response.body);
-      final token = decoded['token'];
       final userData = decoded['data'];
-      print('LOGIN DEBUG token: $token');
-
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('auth', token1);
 
       return {
-        'token': token,
+        'token': token1,
         'isAdmin': userData['isAdmin'] ?? false,
       };
     } else {
@@ -33,6 +34,6 @@ class AuthService {
 
   static Future<void> loadToken() async {
     final prefs = await SharedPreferences.getInstance();
-    Global.token = prefs.getString('token') ?? '';
+    Global.token = prefs.getString('auth') ?? '';
   }
 }

@@ -6,8 +6,8 @@ import '../utils/global.dart';
 
 class StudentService {
   final baseUrl = Global.baseUrl;
- // final token = Global.token;
-  final token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsImlhdCI6MTc0OTkyMDcxMCwiZXhwIjoxODEyMTI4NzEwfQ.P5EPPcjPpr5IpGZ-ELS0ilf1lDusLtyc8gNHl6f0PbI';
+  final token = Global.token;
+
 
   StudentService({required baseUrl, required token});
 
@@ -51,14 +51,10 @@ class StudentService {
     required String school,
     required int eYearId,
   }) async {
-    print('Sending token: ${Global.token}');
-
     final url = Uri.parse('$baseUrl/student');
     final response = await http.put(
       url,
       headers: {
-      //  'Authorization': token,
-
         'Authorization': token,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
@@ -71,7 +67,6 @@ class StudentService {
         'eYearId': eYearId.toString(),
       },
     );
-    print('Sending token: ${Global.token}');
 
     if (response.statusCode != 200) {
       print('Response body: ${response.body}');
@@ -154,7 +149,7 @@ class StudentService {
     required String number,
     required String token,
   }) async {
-    final url = Uri.parse('$baseUrl/student/$certTypeId/$eYearId/$number');
+    final url = Uri.parse('$baseUrl/student/$eYearId/$certTypeId/$number');
 
     final response = await http.get(
       url,

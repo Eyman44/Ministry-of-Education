@@ -35,7 +35,8 @@ class StudentProfilePage extends StatefulWidget {
 
 class _StudentProfilePageState extends State<StudentProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController registrationNoController = TextEditingController();
+  final TextEditingController registrationNoController =
+      TextEditingController();
   final TextEditingController certificateController = TextEditingController();
   final TextEditingController yearController = TextEditingController();
   final TextEditingController motherNameController = TextEditingController();
@@ -43,6 +44,8 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   final TextEditingController schoolController = TextEditingController();
 
   List<YearModel> years = [];
+  List<String> certifications = [];
+  String? selectedCertification;
   YearModel? selectedYear;
   List<CertTypeModel> certTypes = [];
   CertTypeModel? selectedCertType;
@@ -52,14 +55,18 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   bool isCertLoading = true;
   int? studentId;
 
-  bool get isEditMode => widget.certTypeId != null && widget.eYearId != null && widget.number != null;
+  bool get isEditMode =>
+      widget.certTypeId != null &&
+      widget.eYearId != null &&
+      widget.number != null;
 
   late StudentService studentService;
 
   @override
   void initState() {
     super.initState();
-    studentService = StudentService(baseUrl: Global.baseUrl, token: Global.token);
+    studentService =
+        StudentService(baseUrl: Global.baseUrl, token: Global.token);
 
     if (isEditMode) {
       studentId = widget.studentId;
@@ -78,7 +85,8 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   void loadYears() async {
     try {
       final url = Uri.parse('${Global.baseUrl}/admin/years');
-      final response = await http.get(url, headers: {'Authorization': Global.token});
+      final response =
+          await http.get(url, headers: {'Authorization': Global.token});
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body)['data'];
         setState(() {
@@ -95,11 +103,15 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   void loadCertTypes() async {
     try {
       final url = Uri.parse('${Global.baseUrl}/certType/');
-      final response = await http.get(url, headers: {'Authorization': Global.token});
+      final response =
+          await http.get(url, headers: {'Authorization': Global.token});
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body)['data'];
+        final types = data.map((e) => CertTypeModel.fromJson(e)).toList();
         setState(() {
-          certTypes = data.map((e) => CertTypeModel.fromJson(e)).toList();
+          certTypes = types;
+          certifications =
+              types.map((e) => e.certificationName).toSet().toList();
         });
       }
     } catch (e) {
@@ -117,6 +129,9 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     fullNameController.clear();
     schoolController.clear();
     setState(() {
+      selectedCertification = null;
+      selectedCertType = null;
+      selectedYear = null;
       resultStatus = 'Passed';
     });
   }
@@ -147,10 +162,13 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(isEditMode ? 'Student updated successfully' : 'Student saved successfully'),
+            content: Text(isEditMode
+                ? 'Student updated successfully'
+                : 'Student saved successfully'),
             backgroundColor: AppColor.purple,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         );
       } catch (e) {
@@ -171,148 +189,219 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Stack(
-        children: [
-          SizedBox.expand(
-            child: Opacity(
-              opacity: 0.3,
-              child: Image.asset(AppImageAsset.s, fit: BoxFit.cover),
-            ),
-          ),
-          SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const CircleAvatar(
-                        backgroundImage: AssetImage(AppImageAsset.logo),
-                        radius: 26,
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Ministry of Education',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: AppColor.purple,
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      const Icon(Icons.school, color: AppColor.purple, size: 22),
-                    ],
+              children: [
+                SizedBox.expand(
+                  child: Opacity(
+                    opacity: 0.3,
+                    child: Image.asset(AppImageAsset.s, fit: BoxFit.cover),
                   ),
-                  const SizedBox(height: 20),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: AppColor.purple, width: 1.2),
-                      borderRadius: BorderRadius.circular(16),
-                      color: Colors.white.withOpacity(0.95),
-                    ),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Column(
+                ),
+                SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
                           children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Expanded(
-                                  flex: 3,
-                                  child: Table(
-                                    columnWidths: const {
-                                      0: IntrinsicColumnWidth(),
-                                      1: FlexColumnWidth(),
-                                    },
-                                    defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+                            CircleAvatar(
+                              backgroundImage: AssetImage(AppImageAsset.logo),
+                              radius: 26,
+                            ),
+                            SizedBox(width: 10),
+                            Text(
+                              'Ministry of Education',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: AppColor.purple,
+                              ),
+                            ),
+                            SizedBox(width: 6),
+                            Icon(Icons.school,
+                                color: AppColor.purple, size: 22),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            border:
+                                Border.all(color: AppColor.purple, width: 1.2),
+                            borderRadius: BorderRadius.circular(16),
+                            color: Colors.white.withOpacity(0.95),
+                          ),
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return Column(
+                                children: [
+                                  Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                      _buildRow('Registration No:', registrationNoController),
-                                      TableRow(children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 10),
-                                          child: Text('Certificate:', style: TextStyle(fontSize: 16)),
-                                        ),
-                                        DropdownButtonFormField<CertTypeModel>(
-                                          value: selectedCertType,
-                                          decoration: const InputDecoration(border: OutlineInputBorder()),
-                                          hint: const Text("Certificate Type"),
-                                          items: certTypes.map((type) {
-                                            return DropdownMenuItem(
-                                              value: type,
-                                              child: Text(type.certificationName),
-                                            );
-                                          }).toList(),
-                                          onChanged: (value) {
-                                            setState(() {
-                                              selectedCertType = value;
-                                            });
+                                      Expanded(
+                                        flex: 3,
+                                        child: Table(
+                                          columnWidths: const {
+                                            0: IntrinsicColumnWidth(),
+                                            1: FlexColumnWidth(),
                                           },
+                                          defaultVerticalAlignment:
+                                              TableCellVerticalAlignment.middle,
+                                          children: [
+                                            _buildRow('Registration No:',
+                                                registrationNoController),
+                                            if (!isEditMode) ...[
+                                              TableRow(children: [
+                                                const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 10),
+                                                  child: Text('Certification:',
+                                                      style: TextStyle(
+                                                          fontSize: 16)),
+                                                ),
+                                                DropdownButtonFormField<String>(
+                                                  value: selectedCertification,
+                                                  decoration: const InputDecoration(
+                                                      border:
+                                                          OutlineInputBorder()),
+                                                  hint: const Text(
+                                                      "Select Certification"),
+                                                  items: certifications
+                                                      .map((cert) =>
+                                                          DropdownMenuItem(
+                                                              value: cert,
+                                                              child:
+                                                                  Text(cert)))
+                                                      .toList(),
+                                                  onChanged: isEditMode
+                                                      ? null
+                                                      : (value) {
+                                                          setState(() {
+                                                            selectedCertification =
+                                                                value;
+                                                            selectedCertType =
+                                                                null;
+                                                          });
+                                                        },
+                                                ),
+                                              ]),
+                                            ],
+                                            if (selectedCertification != null)
+                                              TableRow(children: [
+                                                const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      vertical: 10),
+                                                  child: Text('Type:',
+                                                      style: TextStyle(
+                                                          fontSize: 16)),
+                                                ),
+                                                DropdownButtonFormField<
+                                                    CertTypeModel>(
+                                                  value: selectedCertType,
+                                                  decoration: const InputDecoration(
+                                                      border:
+                                                          OutlineInputBorder()),
+                                                  hint:
+                                                      const Text("Select Type"),
+                                                  items: certTypes
+                                                      .where((type) =>
+                                                          type.certificationName ==
+                                                          selectedCertification)
+                                                      .map((type) =>
+                                                          DropdownMenuItem(
+                                                              value: type,
+                                                              child: Text(
+                                                                  type.name)))
+                                                      .toList(),
+                                                  onChanged: isEditMode
+                                                      ? null
+                                                      : (value) {
+                                                          setState(() {
+                                                            selectedCertType =
+                                                                value;
+                                                          });
+                                                        },
+                                                ),
+                                              ]),
+                                            TableRow(children: [
+                                              const Padding(
+                                                padding: EdgeInsets.symmetric(
+                                                    vertical: 10),
+                                                child: Text('Year:',
+                                                    style: TextStyle(
+                                                        fontSize: 16)),
+                                              ),
+                                              DropdownButtonFormField<
+                                                  YearModel>(
+                                                value: selectedYear,
+                                                decoration: const InputDecoration(
+                                                    border:
+                                                        OutlineInputBorder()),
+                                                hint: const Text("Select Year"),
+                                                items: years.map((year) {
+                                                  return DropdownMenuItem(
+                                                    value: year,
+                                                    child: Text(year.value),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (value) {
+                                                  setState(() {
+                                                    selectedYear = value;
+                                                  });
+                                                },
+                                              ),
+                                            ]),
+                                            _buildRow('Full Name:',
+                                                fullNameController),
+                                            _buildRow('Mother Name:',
+                                                motherNameController),
+                                            _buildRow(
+                                                'School:', schoolController),
+                                          ],
                                         ),
-                                      ]),
-                                      TableRow(children: [
+                                      ),
+                                      if (constraints.maxWidth > 600)
                                         const Padding(
-                                          padding: EdgeInsets.symmetric(vertical: 10),
-                                          child: Text('Year:', style: TextStyle(fontSize: 16)),
+                                          padding: EdgeInsets.only(left: 16),
+                                          child: Icon(
+                                              Icons.perm_contact_calendar_sharp,
+                                              color: Color.fromARGB(
+                                                  255, 170, 175, 219),
+                                              size: 100),
                                         ),
-                                        DropdownButtonFormField<YearModel>(
-                                          value: selectedYear,
-                                          decoration: const InputDecoration(border: OutlineInputBorder()),
-                                          hint: const Text("Select Year"),
-                                          items: years.map((year) {
-                                            return DropdownMenuItem(
-                                              value: year,
-                                              child: Text(year.value),
-                                            );
-                                          }).toList(),
-                                          onChanged: (value) {
-                                            setState(() {
-                                              selectedYear = value;
-                                            });
-                                          },
-                                        ),
-                                      ]),
-                                      _buildRow('Full Name:', fullNameController),
-                                      _buildRow('Mother Name:', motherNameController),
-                                      _buildRow('School:', schoolController),
                                     ],
                                   ),
-                                ),
-                                if (constraints.maxWidth > 600)
-                                  const Padding(
-                                    padding: EdgeInsets.only(left: 16),
-                                    child: Icon(Icons.perm_contact_calendar_sharp,
-                                        color: Color.fromARGB(255, 170, 175, 219), size: 100),
-                                  ),
-                              ],
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        Center(
+                          child: ElevatedButton(
+                            onPressed: _saveStudent,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColor.purple,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 40, vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
                             ),
-                          ],
-                        );
-                      },
+                            child: Text(
+                              isEditMode ? 'Update' : 'Save',
+                              style: const TextStyle(
+                                  fontSize: 16, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 30),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: _saveStudent,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColor.purple,
-                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                      child: Text(
-                        isEditMode ? 'Update' : 'Save',
-                        style: const TextStyle(fontSize: 16, color: Colors.white),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -320,14 +409,16 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
     return TableRow(children: [
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+        child: Text(label,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
       ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 6),
         child: TextFormField(
           controller: controller,
           decoration: const InputDecoration(border: OutlineInputBorder()),
-          validator: (value) => value == null || value.isEmpty ? 'Required' : null,
+          validator: (value) =>
+              value == null || value.isEmpty ? 'Required' : null,
         ),
       ),
     ]);
